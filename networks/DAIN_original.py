@@ -163,7 +163,17 @@ class DAIN(torch.nn.Module):
             STEP 3.4: perform the frame interpolation process 
         '''
         cur_offset_output = [cur_offset_outputs[0][0], cur_offset_outputs[1][0]]
+        ctx0,ctx2 = self.FilterInterpolate_ctx(cur_ctx_output[0],cur_ctx_output[1],
+                                                   cur_offset_output,cur_filter_output)
 
+        cur_output,ref0,ref2 = self.FilterInterpolate(cur_input_0, cur_input_2,cur_offset_output,cur_filter_output,self.filter_size**2)
+
+        rectify_input = torch.cat((cur_output,ref0,ref2,
+                                    cur_offset_output[0],cur_offset_output[1],
+                                    cur_filter_output[0],cur_filter_output[1],
+                                    ctx0,ctx2
+        ),dim =1)
+        cur_output_rectified = self.rectifyNet(rectify_input) + cur_output
 
         '''
             STEP 3.5: for training phase, we collect the variables to be penalized.
@@ -181,8 +191,8 @@ class DAIN(torch.nn.Module):
             # return losses, loss_occlusion
             return losses, offsets,filters,occlusions
         else:
-            #cur_outputs = [cur_output,cur_output_rectified]
-            return [],cur_offset_output,[]
+            cur_outputs = [cur_output,cur_output_rectified]
+            return cur_outputs,cur_offset_output,cur_filter_output
 
     def forward_flownets(self, model, input, time_offsets = None):
 
