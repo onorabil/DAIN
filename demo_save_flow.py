@@ -26,8 +26,8 @@ DATA_PATH = '/data'
 OUTPUT_PATH = '/results'
 
 
-if not os.path.exists(RESULT_PATH):
-    os.mkdir(RESULT_PATH)
+if not os.path.exists(OUTPUT_PATH):
+    os.mkdir(OUTPUT_PATH)
 
 
 
@@ -127,15 +127,15 @@ print("The unique id for current testing is: " + str(unique_id))
 
 
 
-file_list = sorted(os.listdir(DATA_PATH)
+file_list = sorted(os.listdir(DATA_PATH))
 
 
-for idx, current_file in enumerate(files_in[:-1]):
+for idx, current_file in enumerate(file_list[:-1]):
     print(idx)
     IMAGE_1 = file_list[idx]
     IMAGE_2 = file_list[idx+1]
-    IMAGE_PATH_RGB_1 = os.path.join(BASE_PATH, IMAGE_1)
-    IMAGE_PATH_RGB_2 = os.path.join(BASE_PATH, IMAGE_2)
+    IMAGE_PATH_RGB_1 = os.path.join(DATA_PATH, IMAGE_1)
+    IMAGE_PATH_RGB_2 = os.path.join(DATA_PATH, IMAGE_2)
 
 
     arguments_strFirst = IMAGE_PATH_RGB_1
