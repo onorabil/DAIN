@@ -12,6 +12,15 @@ IEEE Conference on Computer Vision and Pattern Recognition, Long Beach, CVPR 201
 
 This work is developed based on our TPAMI work [MEMC-Net](https://github.com/baowenbo/MEMC-Net), where we propose the adaptive warping layer. Please also consider referring to it.
 
+### Quick demo
+
+Warping 1st two images from folder
+    $ python demo_warping_2_images.py
+Save flow from folder
+    $ python demo_save_flow.py
+    
+Make sure to change the `DATA_PATH` and `OUT_SIZE`
+
 ### Table of Contents
 1. [Introduction](#introduction)
 1. [Citation](#citation)

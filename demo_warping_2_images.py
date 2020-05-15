@@ -28,8 +28,8 @@ DATA_PATH = './data'
 OUTPUT_PATH = './results'
 
 
-if not os.path.exists(RESULT_PATH):
-    os.mkdir(RESULT_PATH)
+if not os.path.exists(OUTPUT_PATH):
+    os.mkdir(OUTPUT_PATH)
 
 
 
@@ -131,8 +131,12 @@ OUT_SIZE = (1080, 1980)
 OUT_SIZE = (960, 1280)
 
 
-IMAGE_PATH_RGB_1 = 'data/0.jpg'
-IMAGE_PATH_RGB_2 = 'data/1.jpg'
+all_images = os.listdir(DATA_PATH)
+
+assert len(all_images) > 1, "The input folder needs at least two images"
+
+IMAGE_PATH_RGB_1 = os.path.join(DATA_PATH, all_images[0])
+IMAGE_PATH_RGB_2 = os.path.join(DATA_PATH, all_images[1])
 
 
 arguments_strFirst = IMAGE_PATH_RGB_1

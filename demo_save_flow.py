@@ -22,8 +22,9 @@ import gc
 torch.backends.cudnn.benchmark = True # to speed up the
 
 
-DATA_PATH = '/data'
-OUTPUT_PATH = '/results'
+DATA_PATH = './data'
+OUTPUT_PATH = './results'
+OUT_SIZE = (960, 1280)
 
 
 if not os.path.exists(OUTPUT_PATH):
@@ -136,15 +137,10 @@ for idx, current_file in enumerate(file_list[:-1]):
     IMAGE_2 = file_list[idx+1]
     IMAGE_PATH_RGB_1 = os.path.join(DATA_PATH, IMAGE_1)
     IMAGE_PATH_RGB_2 = os.path.join(DATA_PATH, IMAGE_2)
-
-
+    print(IMAGE_PATH_RGB_1, IMAGE_PATH_RGB_2)
+    
     arguments_strFirst = IMAGE_PATH_RGB_1
     arguments_strSecond = IMAGE_PATH_RGB_2
-
-    #print('memory before inference', torch.cuda.memory_allocated())
-
-    #imgL_o = cv2.imread(arguments_strFirst)[:,:,::-1].copy()
-    #imgR_o = cv2.imread(arguments_strSecond)[:,:,::-1].copy()
 
     imgL_o = imread(arguments_strFirst)
     imgR_o = imread(arguments_strSecond)
@@ -153,17 +149,8 @@ for idx, current_file in enumerate(file_list[:-1]):
     imgL_o = imgL_o[:,:,0:3]
     imgR_o = imgR_o[:,:,0:3]
 
-    #print('mean diff{:.30f}'.format(np.mean(imgL_o_ocv - imgL_o)))
-    #print('max diff{:.30f}'.format(np.max(imgL_o_ocv - imgL_o)))
-
-    #inarr = np.expand_dims(imgL_o_ocv, axis=0)
-    #print(inarr.shape)
-    #ft = torch.FloatTensor(torch.from_numpy(inarr).float())
-
-
-    #print(imgL_o.shape, imgL_o.dtype)
-    #print(imgR_o.shape, imgR_o.dtype)
-
+    imgL_o = imresize(imgL_o, OUT_SIZE)
+    imgR_o = imresize(imgR_o, OUT_SIZE)
 
 
 
@@ -176,7 +163,6 @@ for idx, current_file in enumerate(file_list[:-1]):
     assert (X0.size(1) == X1.size(1))
     assert (X0.size(2) == X1.size(2))
 
-    #print(X0.shape, X1.shape)
 
     intWidth = X0.size(2)
     intHeight = X0.size(1)
@@ -213,48 +199,34 @@ for idx, current_file in enumerate(file_list[:-1]):
         X0 = X0.cuda()
         X1 = X1.cuda()
     proc_end = time.time()
-
+    
     y_s,offset,filter = model(torch.stack((X0, X1),dim = 0))
             
     #print('memory after inference', torch.cuda.memory_allocated())
-
-
-
-    y_ = y_s[save_which]
-
+    
 
     if use_cuda:
         X0 = X0.data.cpu().numpy()
-        y_ = y_.data.cpu().numpy()
         offset = [offset_i.data.cpu().numpy() for offset_i in offset]
-        filter = [filter_i.data.cpu().numpy() for filter_i in filter]  if filter[0] is not None else None
         X1 = X1.data.cpu().numpy()
     else:
         X0 = X0.data.numpy()
-        y_ = y_.data.numpy()
         offset = [offset_i.data.numpy() for offset_i in offset]
-        filter = [filter_i.data.numpy() for filter_i in filter]
         X1 = X1.data.numpy()
 
 
-    X0 = np.transpose(255.0 * X0.clip(0,1.0)[0, :, intPaddingTop:intPaddingTop+intHeight, intPaddingLeft: intPaddingLeft+intWidth], (1, 2, 0))
-    y_ = np.transpose(255.0 * y_.clip(0,1.0)[0, :, intPaddingTop:intPaddingTop+intHeight, intPaddingLeft: intPaddingLeft+intWidth], (1, 2, 0))
     offset = [np.transpose(offset_i[0, :, intPaddingTop:intPaddingTop+intHeight, intPaddingLeft: intPaddingLeft+intWidth], (1, 2, 0)) for offset_i in offset]
 
-    filter = [np.transpose(
-        filter_i[0, :, intPaddingTop:intPaddingTop + intHeight, intPaddingLeft: intPaddingLeft + intWidth],
-        (1, 2, 0)) for filter_i in filter]  if filter is not None else None
-    X1 = np.transpose(255.0 * X1.clip(0,1.0)[0, :, intPaddingTop:intPaddingTop+intHeight, intPaddingLeft: intPaddingLeft+intWidth], (1, 2, 0))
 
     print('memory after empty cache', torch.cuda.memory_allocated())
 
     #out_image = image_translated_with_flow_torch(imgL_o,offset[1])
     
-    offset_for_saving = offset[1]#np.array(offset[1], dtype=np.float16)
+    offset_for_saving = np.array(offset[1], dtype=np.float16)
     
     np.savez_compressed(os.path.join(OUTPUT_PATH, IMAGE_1+'.npz'), offset_for_saving)
     
-    del X0, X1, y_s,offset,filter, y_
+    del X0, X1, y_s,offset, y_
     gc.collect()
     torch.cuda.empty_cache()
 
