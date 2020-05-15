@@ -15,8 +15,11 @@ This work is developed based on our TPAMI work [MEMC-Net](https://github.com/bao
 ### Quick demo
 
 Warping 1st two images from folder
+
     $ python demo_warping_2_images.py
+    
 Save flow from folder
+
     $ python demo_save_flow.py
     
 Make sure to change the `DATA_PATH` and `OUT_SIZE`
